@@ -1,0 +1,30 @@
+<div id="storage_manager_wrapper" class="storage-manager-wrapper">
+	<h3>{{ @root.i18n.recordings.storageManager.title }}</h3>
+	<div class="js-storage-items storage-items-list">
+		{{#compare storages.length ">" 0}}
+			{{#each storages}}
+				<div class="js-storage-item storage-provider-wrapper {{#if isActive }}active-storage{{/if}}" data-storage-type="{{type}}" data-uuid="{{id}}">
+					<div class="storage-choice">
+						<a href="" class="js-set-default-storage select-storage-link check-icon-wrapper">
+							<i class="check-icon fa fa-check-circle"></i>
+						</a>
+						<svg class="logo-header"><use xlink:href="#{{#compare type "===" "s3"}}aws{{else}}g-drive{{/compare}}--color" /></svg>
+						<span class="js-storage-name storage-name">{{ name }}</span>
+						<div class="right-section">
+							<a class="js-edit-storage edit-storage-link" href="#"><i class="fa fa-pencil-square-o"></i></a>
+							<a class="js-remove-storage remove-storage-link" href="#"><i class="fa fa-trash-o"></i></a>
+						</div>
+						<div class="js-item-settings-wrapper item-settings-wrapper"></div>
+					</div>
+				</div>
+			{{/each}}
+		{{/compare}}
+	</div>
+	<div class="js-storage-msg-box"></div>
+	<div class="buttons-wrapper">
+		<a href="" class="js-create-storage btn">
+			<i class="fa fa-plus"></i>
+			{{ @root.i18n.recordings.storageManager.newStorageBtnText }}
+		</a>
+	</div>
+</div>

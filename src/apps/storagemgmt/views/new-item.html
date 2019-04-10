@@ -1,0 +1,67 @@
+<div class="js-new-storage-item new-storage-item storage-provider-wrapper">
+	<div class="storage-choice">
+		<div class="storage-item-settings">
+			<div class="js-new-storage-tabs">
+				<ul>
+					<li>
+						<a href="#aws-new-item-content">
+							<svg class="logo-header"><use xlink:href="#aws--color" /></svg>
+						</a>
+					</li>
+					<li>
+						<a href="#gdrive-new-item-content">
+							<svg class="logo-header"><use xlink:href="#g-drive--color" /></svg>
+						</a>
+					</li>
+				</ul>
+				<div class="tab-content">
+					<div class="js-tab-content-item aws tab-content-item" data-type="aws" id="aws-new-item-content">
+						<form class="form-horizontal js-storage-settings-form">
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.recordings.storageManager.itemSettings.nameLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="name">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.recordings.storageManager.itemSettings.bucketLabel }}</span>
+								<div class="controls">
+									<input type="text" value="{{bucket}}" name="bucket">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.recordings.storageManager.itemSettings.keyLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="key">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.recordings.storageManager.itemSettings.secretLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="secret">
+								</div>
+							</label>
+							<div class="control-group">
+								<span class="control-label"></span>
+								<div class="controls">
+									<div class="checkbox">
+										<label><input type="checkbox" value="" name="set_default">{{ @root.i18n.recordings.storageManager.itemSettings.setDefaultLabel }}</label>
+									</div>
+								</div>
+							</div>
+							<div class="buttons-wrapper clearfix">
+								<button type="submit" class="btn btn-primary js-save" >{{ @root.i18n.recordings.storageManager.newItem.saveNewItemText }}</button>
+								<button type="button" class="btn js-cancel">{{ @root.i18n.recordings.storageManager.newItem.cancelBtnText }}</button>
+							</div>
+						</form>
+					</div>
+					<div class="js-tab-content-item gdrive tab-content-item" data-type="gdrive" id="gdrive-new-item-content">
+						Google Drive (under construction)
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+

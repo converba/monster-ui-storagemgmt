@@ -1,0 +1,26 @@
+{
+	"name": "storagemgmt",
+	"i18n": {
+		"en-US": {
+			"label": "Storage Engine Management",
+			"description": "The Storage Engine Management app allows you to configure storage"
+		}
+	},
+	"tags": [
+		"reseller"
+	],
+	"icon": "storage.png",
+	"api_url": "",
+	"author": "(C) 2019 CONVERBA LIMITED",
+	"version": "1.0",
+	"license": "-",
+	"price": 0,
+	"screenshots": [
+		"storage1.png"
+	],
+	"urls": {
+		"documentation": "{documentation_url}",
+		"howto": "{howto_video_url}"
+	},
+	"pvt_type": "app"
+}
