@@ -4,7 +4,7 @@ define(function(require) {
 		toastr = require('toastr');
 
 	var settings = {
-		debug: true
+		debug: false
 	};
 
 	var log = function(msg){
@@ -20,7 +20,7 @@ define(function(require) {
 
 		subscribe: {
 			'storagemgmt.render': 'storageManagerRender',
-			'storagemgmt.getStorageData': 'getStorage'
+			'storagemgmt.getStorageData': 'getStorageData'
 		},
 
 		i18n: {
@@ -59,14 +59,14 @@ define(function(require) {
 				]
 			});
 
-			$(document.body).addClass('storage-conf-app'); // for styles;
+			$(document.body).addClass('storagemgmt-app'); // for styles;
 		},
 
 
 		storageManagerRender: function(pArgs) {
 			var self = this,
 				args = pArgs || {},
-				$container = args.container || $('.js-storages-settings .js-settings-content'),
+				$container = args.container || $('<div></div>').appendTo(document.body),
 				callback = args.callback;
 
 			if(pArgs.hasOwnProperty('onSetDefault') && typeof(pArgs.onSetDefault) === 'function') {
@@ -78,13 +78,12 @@ define(function(require) {
 				return;
 			}
 
-			self.getStorage(args, function(data) {
+			self.getStorage(function(data) {
 				var storagesList = self.storageManagerFormatData(data.storage);
 				log('Storages List:');
 				log(storagesList);
 				var template = $(self.getTemplate({
 					name: 'layout',
-					submodule: 'storageManager',
 					data: {
 						storages: storagesList
 					}
@@ -108,51 +107,34 @@ define(function(require) {
 				resource : 'storage.add',
 				data : {
 					accountId : self.accountId,
-					data : {},
+					data : {
+						'attachments': {},
+						'plan': {}
+					},
 					removeMetadataAPI: true,
-					generateError: self.settings.debug
+					generateError: settings.debug
 				},
 				success : function(data) {
 					if(typeof(callback) === 'function') {
 						callback(data);
 					}
 				},
-				error : function(textStatus) {
-					self.log('Error');
-					self.log(textStatus);
-					if(typeof(callback) === 'function') {
-						callback(null);
-					}
+				error : function(error) {
+					toastr.error(self.i18n.active().storagemgmt.storageError);
+					log(error.status + ' - ' + error.error + ': ' + error.message + ' ');
 				}
 			});
 		},
 
-		/* getStorageData: function(args, callback) {
-			var self = this;
-
-			monster.parallel({
-				storage: function(callback) {
-					if (args.hasOwnProperty('data')) {
-						callback && callback(null, args.data);
-					} else {
-						self.getStorage(function(data) {
-							callback && callback(null, data);
-						});
-					}
-				}
-			}, function(err, results) {
-				callback && callback(results);
-			});
-		}, */
+		getStorageData: function (args) {
+			this.getStorage(args.callback)
+		},
 
 		getStorage: function(callback) {
 			var self = this;
+			toastr.success('getStorage');
 
-			return new Promise((resolve, reject) => {
-
-			})
-
-			return self.callApi({
+			self.callApi({
 				resource: 'storage.get',
 				data: {
 					accountId: self.accountId,
@@ -163,28 +145,12 @@ define(function(require) {
 					log('Storage Data:');
 					log(data);
 
-					try {
-						var storageUUID = data.data.plan.modb.types.call_recording.attachments.handler;
-						var storageData = data.data.attachments[storageUUID];
-
-						self._getRecordings(function(recordings) {
-							self._renderRecordingsTable(recordings);
-						});
-					} catch(e) {
-						// Open settings to create new storage
-						$('#settings-btn').click();
-					}
-
-
-
-					callback(data.data);
+					callback(data);
 				},
 				error: function(data, error, globalHandler) {
-					if (error.status === 404) {
-						callback(undefined);
-					} else {
-						globalHandler(data);
-					}
+					self._doStorageInitialRequest(function() {
+						self.getStorage(callback);
+					});
 				}
 			});
 		},
@@ -228,7 +194,7 @@ define(function(require) {
 			}
 			var itemData;
 			var storagesList = [];
-			if(data.hasOwnProperty('attachments') && Object.keys(data.attachments).length > 0) {
+			if(data && data.hasOwnProperty('attachments') && Object.keys(data.attachments).length > 0) {
 				var attachments = data.attachments;
 				for(var i in attachments) if(attachments.hasOwnProperty(i)) {
 					itemData = {
@@ -270,7 +236,6 @@ define(function(require) {
 
 					var template = $(self.getTemplate({
 						name: 'item-settings',
-						submodule: 'storageManager',
 						data: {
 							name: storageData.name,
 							bucket: storageData.settings.bucket,
@@ -306,7 +271,17 @@ define(function(require) {
 
 			template.on('click', '.js-create-storage', function(e) {
 				e.preventDefault();
-				self.storageManagerShowNewItemPanel();
+				var $newStorageItem = $('.js-storage-items .js-new-storage-item');
+				if ($newStorageItem.length === 0) {
+					self.storageManagerShowNewItemPanel();
+				} else {
+					$newStorageItem.addClass('flash-effect');
+					(function($newStorageItem){
+						var timeoutId = setTimeout(function() {
+							$newStorageItem.removeClass('flash-effect');
+						}, 2000)
+					})($newStorageItem)
+				}
 			});
 
 			template.on('click', '.js-set-default-storage', function(e) {
@@ -326,8 +301,7 @@ define(function(require) {
 			var self = this;
 
 			var template = $(self.getTemplate({
-				name: 'new-item',
-				submodule: 'storageManager'
+				name: 'new-item'
 			}));
 
 			self.storageManagerNewItemBind(template);
@@ -344,13 +318,16 @@ define(function(require) {
 				e.preventDefault();
 
 				var $tab = $(this).closest('.js-tab-content-item');
-
 				var storageData = {};
+				var $form = $tab.find('.js-storage-settings-form');
+				var formData = monster.ui.getFormData($form[0]);
+
+				// TODO:
 				if($tab.data('type') === 'aws') {
-					storageData.name = $tab.find('input[name="name"]').val();
-					storageData.bucket = $tab.find('input[name="bucket"]').val();
-					storageData.key = $tab.find('input[name="key"]').val();
-					storageData.secret = $tab.find('input[name="secret"]').val();
+					storageData.name = formData.name;
+					storageData.bucket = formData.bucket;
+					storageData.key = formData.key;
+					storageData.secret = formData.secret;
 					storageData.type = 's3';
 				}
 				storageData.uuid = self.storageManagerGenerateUUID();

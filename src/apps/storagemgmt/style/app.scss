@@ -1,4 +1,4 @@
-.storage-conf-app {
+.storagemgmt-app {
 	.storages-settings {
 		display: block;
 		background: white;
@@ -25,48 +25,6 @@
 				color: #22A5FF;
 			}
 
-		}
-
-		.ui-tabs {
-			border: none;
-			background: none;
-			padding: 0;
-
-			.ui-tabs-nav {
-				background: none;
-				border: none;
-				padding: 0;
-
-				li {
-					border: 0;
-					border-radius: 0;
-					background: #9B9B9B;
-					margin: 0;
-					width: 50%;
-
-					&.ui-tabs-active,
-					&.ui-tabs-active.ui-state-hover {
-						border: none;
-						border-radius: 0;
-						margin: 0;
-						background: white;
-					}
-
-					&.ui-state-hover {
-						background: #CDCDCD;
-						border: none;
-					}
-
-					a {
-						width: 100%;
-						box-sizing: border-box;
-					}
-				}
-			}
-
-			.ui-tabs-panel {
-				padding-bottom: 0;
-			}
 		}
 	}
 }
@@ -306,8 +264,6 @@
 	}
 }
 
-
-
 .storage-item-settings {
 	.form-horizontal {
 		margin: 0 auto;
@@ -339,9 +295,58 @@
 	.buttons-wrapper {
 		text-align: center;
 	}
+
+	.ui-tabs {
+		border: none;
+		background: none;
+		padding: 0;
+
+		.ui-tabs-nav {
+			background: none;
+			border: none;
+			padding: 0;
+
+			li {
+				border: 0;
+				border-radius: 0;
+				background: #9B9B9B;
+				margin: 0;
+				width: 50%;
+
+				&.ui-tabs-active,
+				&.ui-tabs-active.ui-state-hover {
+					border: none;
+					border-radius: 0;
+					margin: 0;
+					background: white;
+				}
+
+				&.ui-state-hover {
+					background: #CDCDCD;
+					border: none;
+				}
+
+				a {
+					width: 100%;
+					box-sizing: border-box;
+				}
+			}
+		}
+
+		.ui-tabs-panel {
+			padding-bottom: 0;
+		}
+	}
 }
 
 .new-storage-item {
+	&.flash-effect > .storage-choice {
+		animation-name: flash_border;
+		animation-duration: 2s;
+		animation-timing-function: linear;
+		animation-iteration-count: 2;
+	}
+
 	.storage-choice {
 		padding: 0;
 	}
@@ -410,4 +415,16 @@
 
 @keyframes blinker {
 	50% { opacity: 0; }
+}
+
+@keyframes flash_border {
+	0% {
+		border-color: #22A5FF;
+	}
+	50% {
+		border-color: #D0D0D9;
+	}
+	100% {
+		border-color: #22A5FF;
+	}
 }

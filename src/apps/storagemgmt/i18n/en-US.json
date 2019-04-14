@@ -1,33 +1,32 @@
 {
-	"storage-config": {
-		"title": "Storage Configuration",
-		"description": "",
-		"welcome": "Welcome {{variable}} to the Storage Configuration App",
+	"storagemgmt": {
+		"title": "Storage Engine Management",
+		"description": "The Storage Engine Management app allows you manage your storage",
+		"welcome": "Welcome {{variable}} to the Storage Engine Management App",
 		"settingsBtnText": "Settings",
-		"storageManager": {
-			"title": "Storage settings",
-			"newStorageBtnText": "New storage",
-			"itemSettings": {
-				"nameLabel": "Storage name",
-				"bucketLabel": "Bucket name",
-				"keyLabel": "Key",
-				"secretLabel": "Secret",
-				"saveBtnText": "Save Changes",
-				"cancelBtnText": "Cancel",
-				"successUpdate": "Your Storage Settings were successfully updated!",
-				"setDefaultLabel": "Set default"
-			},
-			"newItem": {
-				"saveNewItemText": "Create",
-				"cancelBtnText": "Cancel"
-			},
-			"confirmDelete": "Yes, Remove Storage",
-			"confirmDeleteText": "This will remove this Storage from this account.",
-			"confirmDeleteTitle": "Warning! Are you sure?",
-			"successRemovingMessage": "You successfully removed the storage.",
-			"successSavingMessage": "You successfully saved the storage.",
+		"settingsTitle": "Storage settings",
+		"newStorageBtnText": "New storage",
+		"itemSettings": {
+			"nameLabel": "Storage name",
+			"bucketLabel": "Bucket name",
+			"keyLabel": "Key",
+			"secretLabel": "Secret",
+			"saveBtnText": "Save Changes",
+			"cancelBtnText": "Cancel",
 			"successUpdate": "Your Storage Settings were successfully updated!",
-			"alreadyActiveMessage": "This storage is already active"
-		}
+			"setDefaultLabel": "Set default"
+		},
+		"newItem": {
+			"saveNewItemText": "Create",
+			"cancelBtnText": "Cancel"
+		},
+		"confirmDelete": "Yes, Remove Storage",
+		"confirmDeleteText": "This will remove this Storage from this account.",
+		"confirmDeleteTitle": "Warning! Are you sure?",
+		"successRemovingMessage": "You successfully removed the storage.",
+		"successSavingMessage": "You successfully saved the storage.",
+		"successUpdate": "Your Storage Settings were successfully updated!",
+		"alreadyActiveMessage": "This storage is already active",
+		"storageError": "Stores do not work correctly. Contact your administrator to configure it."
 	}
 }

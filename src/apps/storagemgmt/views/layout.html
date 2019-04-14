@@ -1,5 +1,5 @@
 <div id="storage_manager_wrapper" class="storage-manager-wrapper">
-	<h3>{{ @root.i18n.recordings.storageManager.title }}</h3>
+	<h3>{{ @root.i18n.storagemgmt.settingsTitle }}</h3>
 	<div class="js-storage-items storage-items-list">
 		{{#compare storages.length ">" 0}}
 			{{#each storages}}
@@ -24,7 +24,7 @@
 	<div class="buttons-wrapper">
 		<a href="" class="js-create-storage btn">
 			<i class="fa fa-plus"></i>
-			{{ @root.i18n.recordings.storageManager.newStorageBtnText }}
+			{{ @root.i18n.storagemgmt.newStorageBtnText }}
 		</a>
 	</div>
 </div>
