@@ -3,7 +3,7 @@
 	<div class="js-storage-items storage-items-list">
 		{{#compare storages.length ">" 0}}
 			{{#each storages}}
-				<div class="js-storage-item storage-provider-wrapper {{#if isActive }}active-storage{{/if}}" data-storage-type="{{type}}" data-uuid="{{id}}">
+				<div class="js-storage-item storage-provider-wrapper {{#if isActive }}active-storage{{/if}}" data-type="{{type}}" data-uuid="{{id}}">
 					<div class="storage-choice">
 						<a href="" class="js-set-default-storage select-storage-link check-icon-wrapper">
 							<i class="check-icon fa fa-check-circle"></i>

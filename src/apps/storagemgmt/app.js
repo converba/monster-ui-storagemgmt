@@ -132,7 +132,6 @@ define(function(require) {
 
 		getStorage: function(callback) {
 			var self = this;
-			toastr.success('getStorage');
 
 			self.callApi({
 				resource: 'storage.get',
@@ -255,17 +254,17 @@ define(function(require) {
 			template.on('click', '.js-remove-storage', function(e) {
 				e.preventDefault();
 				var uuid = $(this).closest('.js-storage-item').data('uuid');
-				monster.ui.confirm(self.i18n.active().recordings.storageManager.confirmDeleteText, function() {
+				monster.ui.confirm(self.i18n.active().storagemgmt.confirmDeleteText, function() {
 					self.storageManagerDeleteStorage(uuid, function() {
 						$('.js-storage-item[data-uuid="' + uuid + '"]').slideUp(400, function() {
 							$(this).remove();
 						});
-						self.storageManagerShowMessage(self.i18n.active().recordings.storageManager.successRemovingMessage);
+						self.storageManagerShowMessage(self.i18n.active().storagemgmt.successRemovingMessage);
 					});
 				}, undefined, {
 					type: 'warning',
-					title: self.i18n.active().recordings.storageManager.confirmDeleteTitle,
-					confirmButtonText: self.i18n.active().recordings.storageManager.confirmDelete
+					title: self.i18n.active().storagemgmt.confirmDeleteTitle,
+					confirmButtonText: self.i18n.active().storagemgmt.confirmDelete
 				});
 			});
 
@@ -290,7 +289,7 @@ define(function(require) {
 				var isAlreadyActive = $(this).closest('.js-storage-item').hasClass('active-storage');
 
 				if(isAlreadyActive) {
-					self.storageManagerShowMessage(self.i18n.active().recordings.storageManager.alreadyActiveMessage, 'warning')
+					self.storageManagerShowMessage(self.i18n.active().storagemgmt.alreadyActiveMessage, 'warning')
 				} else {
 					self.storageManagerSetDefaultStorage(uuid);
 				}
@@ -318,29 +317,49 @@ define(function(require) {
 				e.preventDefault();
 
 				var $tab = $(this).closest('.js-tab-content-item');
-				var storageData = {};
 				var $form = $tab.find('.js-storage-settings-form');
 				var formData = monster.ui.getFormData($form[0]);
+				var typeKeyword = $tab.data('type');
 
-				// TODO:
-				if($tab.data('type') === 'aws') {
-					storageData.name = formData.name;
-					storageData.bucket = formData.bucket;
-					storageData.key = formData.key;
-					storageData.secret = formData.secret;
-					storageData.type = 's3';
-				}
-				storageData.uuid = self.storageManagerGenerateUUID();
+				var storageData = self.storageManagerMakeConfig(typeKeyword, formData);
 
+				// var uuid = Object.keys(storageData.attachments)[0];
 				var isNeedSetDefault = $tab.find('input[name="set_default"]').is(':checked');
+				// TODO: check next
+				/* storageData.plan = {
+					modb: {
+						types: {
+							call_recording: {
+								attachments: {
+									handler: uuid
+								}
+							},
+							mailbox_message: {
+								attachments: {
+									handler: uuid
+								}
+							}
+						}
+					},
+					account: {
+						types: {
+							media: {
+								attachments: {
+									handler: uuid
+								}
+							}
+						}
+					}
+				}; */
 
-				self.storageManagerSaveStorage(storageData, function(){
+				self.storageManagerUpdateStorage(storageData, function(){
 					if(isNeedSetDefault) {
+						// TODO: check next
 						self.storageManagerSetDefaultStorage(storageData.uuid);
 					}
 
 					self.storageManagerReload(function(){
-						self.storageManagerShowMessage(self.i18n.active().recordings.storageManager.successSavingMessage, 'success');
+						self.storageManagerShowMessage(self.i18n.active().storagemgmt.successSavingMessage, 'success');
 					});
 				});
 			});
@@ -351,6 +370,46 @@ define(function(require) {
 					$('.js-new-storage-item').remove();
 				});
 			});
+		},
+
+		storageManagerMakeConfig (storageKeyword, data, uuid) {
+			var self = this,
+				storageData = {
+					'attachments': {}
+				};
+
+			if(typeof(uuid) === 'undefined') {
+				uuid = self.storageManagerGenerateUUID();
+			}
+
+			switch (storageKeyword) {
+				case 'aws':
+					storageData.attachments[uuid] = {
+						handler: 's3',
+						name: data.name,
+						settings: {
+							bucket: data.bucket,
+							key: data.key,
+							secret: data.secret
+						}
+					};
+					break;
+				case 'mts':
+					storageData.attachments[uuid] = {
+						handler: 's3',
+						name: data.name,
+						settings: {
+							bucket: data.bucket,
+							key: data.key,
+							secret: data.secret,
+							host: 's3.cloud.mts.ru',
+						}
+					};
+					break;
+				default:
+			}
+
+			return storageData;
 		},
 
 		storageManagerReload: function(callback) {
@@ -388,14 +447,28 @@ define(function(require) {
 									attachments: {
 										handler: uuid
 									}
+								},
+								mailbox_message: {
+									attachments: {
+										handler: uuid
+									}
 								}
 							}
-						}
+						},
+						account: {
+							types: {
+								media: {
+									attachments: {
+										handler: uuid
+									}
+								}
+							}
+						},
 					}
 				};
 
 				// Merge newData into data
-				$.extend(resultData, newData);
+				$.extend(true, resultData, newData);
 
 				self.storageManagerUpdateStorage(resultData, function(data) {
 					$('#storage_manager_wrapper').find('.js-storage-item')
@@ -422,28 +495,17 @@ define(function(require) {
 
 			$settingsContainer.find('.js-save').on('click', function(e) {
 				e.preventDefault();
-
 				var $storageItem = $(this).closest('.js-storage-item');
-
-				var storageData = {
-					type: $storageItem.data('storage-type'),
-					uuid: $storageItem.data('uuid')
-				};
-
 				var $form = $storageItem.find('.js-storage-settings-form');
+				var formData = monster.ui.getFormData($form[0]);
+				var typeKeyword = $storageItem.data('type');
+				var uuid = $storageItem.data('uuid');
+				var storageData = self.storageManagerMakeConfig(typeKeyword, formData, uuid);
 
-				if(storageData.type === 's3') {
-					storageData.name = $form.find('input[name="name"]').val();
-					storageData.bucket = $form.find('input[name="bucket"]').val();
-					storageData.key = $form.find('input[name="key"]').val();
-					storageData.secret = $form.find('input[name="secret"]').val();
-				}
-
-				self.storageManagerSaveStorage(storageData, function(data) {
+				self.storageManagerUpdateStorage(storageData, function(data) {
 					// update item name
-					$('.js-storage-item[data-uuid="' + storageData.uuid + '"]').find('.js-storage-name').text(storageData.name);
-
-					self.storageManagerShowMessage(self.i18n.active().recordings.storageManager.successUpdate, 'success');
+					$('.js-storage-item[data-uuid="' + uuid + '"]').find('.js-storage-name').text(storageData.name);
+					self.storageManagerShowMessage(self.i18n.active().storagemgmt.successUpdate, 'success');
 				});
 			});
 		},
@@ -482,50 +544,9 @@ define(function(require) {
 				});
 			})
 		},
-		storageManagerSaveStorage: function(saveData, callback) {
-			var self = this;
-
-			if(!monster.util.isAdmin()) {
-				log('Permission error. Use admin account for change storage settings');
-				return;
-			}
-
-			self.getStorage(function(storagesData) {
-				if(!storagesData || typeof(storagesData) === 'undefined') {
-					storagesData = {};
-				}
-
-				var resultData = {};
-				if(storagesData.hasOwnProperty('attachments')) {
-					resultData.attachments = storagesData.attachments;
-				}
-				if(storagesData.hasOwnProperty('plan')) {
-					resultData.plan = storagesData.plan;
-				}
-
-				if(saveData.type === 's3') {
-					var newData = {
-						'attachments': {}
-					};
-					newData.attachments[saveData.uuid] = {
-						'handler': 's3',
-						'name': saveData.name,
-						'settings': {
-							'bucket': saveData.bucket,
-							'key': saveData.key,
-							'secret': saveData.secret
-						}
-					}
-				}
-
-				$.extend(true, resultData, newData);
-
-				self.storageManagerUpdateStorage(resultData, callback);
-			})
-		},
 
 		storageManagerGenerateUUID: function() {
-			return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+			return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 				var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 				return v.toString(16);
 			});

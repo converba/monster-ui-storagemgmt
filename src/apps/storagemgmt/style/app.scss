@@ -146,13 +146,9 @@
 			color: #22A5FF;
 		}
 
-		.storage-item-settings {
-			padding-top: 10px;
-
-			&>.row-fluid {
-				border-top: 1px solid #D0D0D9;
-				padding-top: 18px;
-			}
+		.storage-item-settings >.row-fluid {
+			border-top: 1px solid #D0D0D9;
+			padding-top: 18px;
 		}
 	}
 

@@ -9,8 +9,8 @@
 						</a>
 					</li>
 					<li>
-						<a href="#gdrive-new-item-content">
-							<svg class="logo-header"><use xlink:href="#g-drive--color" /></svg>
+						<a href="#mts-new-item-content">
+							<img class="logo-header" src="apps/storagemgmt/style/static/images/mts.svg" />
 						</a>
 					</li>
 				</ul>
@@ -55,8 +55,45 @@
 							</div>
 						</form>
 					</div>
-					<div class="js-tab-content-item gdrive tab-content-item" data-type="gdrive" id="gdrive-new-item-content">
-						Google Drive (under construction)
+					<div class="js-tab-content-item mts tab-content-item" data-type="mts" id="mts-new-item-content">
+						<form class="form-horizontal js-storage-settings-form">
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.storagemgmt.itemSettings.nameLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="name">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.storagemgmt.itemSettings.bucketLabel }}</span>
+								<div class="controls">
+									<input type="text" value="{{bucket}}" name="bucket">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.storagemgmt.itemSettings.keyLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="key">
+								</div>
+							</label>
+							<label class="control-group">
+								<span class="control-label">{{ @root.i18n.storagemgmt.itemSettings.secretLabel }}</span>
+								<div class="controls">
+									<input type="text" value="" name="secret">
+								</div>
+							</label>
+							<div class="control-group">
+								<span class="control-label"></span>
+								<div class="controls">
+									<div class="checkbox">
+										<label><input type="checkbox" value="" name="set_default">{{ @root.i18n.storagemgmt.itemSettings.setDefaultLabel }}</label>
+									</div>
+								</div>
+							</div>
+							<div class="buttons-wrapper clearfix">
+								<button type="submit" class="btn btn-primary js-save" >{{ @root.i18n.storagemgmt.newItem.saveNewItemText }}</button>
+								<button type="button" class="btn js-cancel">{{ @root.i18n.storagemgmt.newItem.cancelBtnText }}</button>
+							</div>
+						</form>
 					</div>
 				</div>
 			</div>
