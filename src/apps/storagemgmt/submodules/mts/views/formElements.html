@@ -1,0 +1,26 @@
+<input type="hidden" name="handler" value="s3"/>
+<input type="hidden" name="settings.host" value="s3.cloud.mts.ru:443"/>
+<label class="control-group">
+	<span class="control-label">{{ @root.i18n.storagemgmt.submodules.s3.nameLabel }}</span>
+	<div class="controls">
+		<input type="text" value="{{name}}" name="name">
+	</div>
+</label>
+<label class="control-group">
+	<span class="control-label">{{ @root.i18n.storagemgmt.submodules.s3.bucketLabel }}</span>
+	<div class="controls">
+		<input type="text" value="{{settings.bucket}}" name="settings.bucket">
+	</div>
+</label>
+<label class="control-group">
+	<span class="control-label">{{ @root.i18n.storagemgmt.submodules.s3.keyLabel }}</span>
+	<div class="controls">
+		<input type="text" value="{{settings.key}}" name="settings.key">
+	</div>
+</label>
+<label class="control-group">
+	<span class="control-label">{{ @root.i18n.storagemgmt.submodules.s3.secretLabel }}</span>
+	<div class="controls">
+		<input type="text" value="{{settings.secret}}" name="settings.secret">
+	</div>
+</label>

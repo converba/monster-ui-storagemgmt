@@ -261,6 +261,14 @@
 }
 
 .storage-item-settings {
+	.storage-item-logo {
+		text-align: center;
+
+		img, svg {
+			max-height: 40px;
+		}
+	}
+
 	.form-horizontal {
 		margin: 0 auto;
 		display: block;

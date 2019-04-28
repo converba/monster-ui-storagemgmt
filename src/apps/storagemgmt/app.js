@@ -1,7 +1,8 @@
 define(function(require) {
 	var $ = require('jquery'),
 		monster = require('monster'),
-		toastr = require('toastr');
+		toastr = require('toastr'),
+		storagesConfig = require('./storages');
 
 	var settings = {
 		debug: false
@@ -13,15 +14,29 @@ define(function(require) {
 		}
 	};
 
+	// Autoload submodules
+	// (Submodules should be described in /apps/storagemgmt/storages.js)
+	var storagesList = storagesConfig.storages;
+	var storagesPaths = [];
+	for (var i = 0, len = storagesList.length; i < len; i++) {
+		storagesPaths.push('./submodules/' + storagesList[i] + '/' + storagesList[i])
+	}
+	require(storagesPaths);
+
 	var storageManager = {
 		name: 'storagemgmt',
 		css: [ 'app' ],
 		requests: {},
 
 		subscribe: {
+			'storagemgmt.fetchStorages': 'define_storage_nodes', // For all submodules
 			'storagemgmt.render': 'storageManagerRender',
 			'storagemgmt.getStorageData': 'getStorageData'
 		},
+
+		subModules: storagesList,
+
+		storages: {},
 
 		i18n: {
 			'en-US': { customCss: false }
@@ -47,6 +62,13 @@ define(function(require) {
 		render: function(container) {
 			var self = this;
 
+			monster.pub('storagemgmt.fetchStorages', {
+				storages: self.storages,
+				callback: function (args) {
+					self.extendI18nOfSubmodule(args);
+				}
+			});
+
 			monster.ui.generateAppLayout(self, {
 				menus: [
 					{
@@ -59,9 +81,27 @@ define(function(require) {
 				]
 			});
 
-			$(document.body).addClass('storagemgmt-app'); // for styles;
+			$(document.body).addClass('storagemgmt-app'); // class for styles;
 		},
 
+		extendI18nOfSubmodule: function (args) {
+			var self = this;
+			if(args.i18n && args.submoduleName) {
+				var submoduleLanguages = args.i18n;
+				var curLanguage = self.i18n.hasOwnProperty(monster.config.whitelabel.language) ? monster.config.whitelabel.language : monster.defaultLanguage;
+
+				if (submoduleLanguages.length && submoduleLanguages.length > 0) {
+					if(submoduleLanguages.indexOf(curLanguage) > -1) {
+						$.getJSON('/apps/storagemgmt/submodules/' + args.submoduleName + '/i18n/' + curLanguage  + '.json').done(function (newDict) {
+							var dict = self.data.i18n[curLanguage];
+							$.extend(true, dict, newDict);
+						})
+					}
+				}
+			} else {
+				log('Extend i18n of submodule failed');
+			}
+		},
 
 		storageManagerRender: function(pArgs) {
 			var self = this,
@@ -79,17 +119,22 @@ define(function(require) {
 			}
 
 			self.getStorage(function(data) {
-				var storagesList = self.storageManagerFormatData(data.storage);
+				var storagesData = self.storageManagerFormatData(data.storage);
+				for (var i = 0, len = storagesData.length; i < len; i++) {
+					storagesData[i].logo = self.storages[storagesData[i].type].getLogo()
+				}
+
 				log('Storages List:');
-				log(storagesList);
+				log(storagesData);
+
 				var template = $(self.getTemplate({
 					name: 'layout',
 					data: {
-						storages: storagesList
+						storages: storagesData
 					}
 				}));
 
-				self.storageManagerBind(template, args, storagesList);
+				self.storageManagerBind(template, args, storagesData);
 
 				$container.empty()
 					.append(template).closest('.js-storages-settings').slideDown();
@@ -223,25 +268,18 @@ define(function(require) {
 				var $editStorageBtn = $(this);
 				self.getStorage(function(data) {
 
-					var $container = $editStorageBtn.closest('.js-storage-item')
+					var $storageItem = $editStorageBtn.closest('.js-storage-item');
+					var storageType = $storageItem.data('type');
+					var uuid = $storageItem.data('uuid');
+					var $container = $storageItem
 						.find('.js-item-settings-wrapper')
 						.hide();
-
-					var uuid = $editStorageBtn.closest('.js-storage-item').data('uuid');
 
 					if(data.attachments.hasOwnProperty(uuid)) {
 						var storageData = data.attachments[uuid];
 					}
 
-					var template = $(self.getTemplate({
-						name: 'item-settings',
-						data: {
-							name: storageData.name,
-							bucket: storageData.settings.bucket,
-							key: storageData.settings.key,
-							secret: storageData.settings.secret
-						}
-					}));
+					var template = $(self.storages[storageType].getFormElements(storageData));
 
 					$container.empty()
 						.append(template);
@@ -299,8 +337,27 @@ define(function(require) {
 		storageManagerShowNewItemPanel: function(){
 			var self = this;
 
+			var data = [];
+
+			var keyword = '';
+			var storagesList = Object.keys(self.storages);
+			for (var i = 0, len = storagesList.length; i < len; i++) {
+				keyword = storagesList[i];
+				data.push({
+					name: keyword,
+					type: keyword,
+					logo: self.storages[keyword].getLogo(),
+					tabId: keyword + '-new-item-content',
+					tabLink: '#' + keyword + '-new-item-content',
+					formElements: self.storages[keyword].getFormElements({})
+				})
+			}
+
 			var template = $(self.getTemplate({
-				name: 'new-item'
+				name: 'new-item',
+				data: {
+					storages: data
+				}
 			}));
 
 			self.storageManagerNewItemBind(template);
@@ -322,39 +379,11 @@ define(function(require) {
 				var typeKeyword = $tab.data('type');
 
 				var storageData = self.storageManagerMakeConfig(typeKeyword, formData);
-
-				// var uuid = Object.keys(storageData.attachments)[0];
 				var isNeedSetDefault = $tab.find('input[name="set_default"]').is(':checked');
-				// TODO: check next
-				/* storageData.plan = {
-					modb: {
-						types: {
-							call_recording: {
-								attachments: {
-									handler: uuid
-								}
-							},
-							mailbox_message: {
-								attachments: {
-									handler: uuid
-								}
-							}
-						}
-					},
-					account: {
-						types: {
-							media: {
-								attachments: {
-									handler: uuid
-								}
-							}
-						}
-					}
-				}; */
 
 				self.storageManagerUpdateStorage(storageData, function(){
 					if(isNeedSetDefault) {
-						// TODO: check next
+						// TODO: test next
 						self.storageManagerSetDefaultStorage(storageData.uuid);
 					}
 
@@ -382,34 +411,12 @@ define(function(require) {
 				uuid = self.storageManagerGenerateUUID();
 			}
 
-			switch (storageKeyword) {
-				case 'aws':
-					storageData.attachments[uuid] = {
-						handler: 's3',
-						name: data.name,
-						settings: {
-							bucket: data.bucket,
-							key: data.key,
-							secret: data.secret
-						}
-					};
-					break;
-				case 'mts':
-					storageData.attachments[uuid] = {
-						handler: 's3',
-						name: data.name,
-						settings: {
-							bucket: data.bucket,
-							key: data.key,
-							secret: data.secret,
-							host: 's3.cloud.mts.ru',
-						}
-					};
-					break;
-				default:
+			if(storageKeyword && self.storages.hasOwnProperty(storageKeyword)) {
+				storageData.attachments[uuid] = data;
+				return storageData;
+			} else {
+				toastr.error('Please install storage correctly (' + storageKeyword + ')');
 			}
-
-			return storageData;
 		},
 
 		storageManagerReload: function(callback) {

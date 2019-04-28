@@ -1,0 +1,12 @@
+{
+	"storagemgmt": {
+		"submodules": {
+			"s3": {
+				"nameLabel": "Name",
+				"bucketLabel": "Bucket",
+				"keyLabel": "Key",
+				"secretLabel": "Secret"
+			}
+		}
+	}
+}
