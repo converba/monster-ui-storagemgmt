@@ -29,9 +29,7 @@ define(function(require) {
 		requests: {},
 
 		subscribe: {
-			'storagemgmt.fetchStorages': 'define_storage_nodes', // For all submodules
-			'storagemgmt.render': 'storageManagerRender',
-			'storagemgmt.getStorageData': 'getStorageData'
+			'storagemgmt.fetchStorages': 'define_storage_nodes' // For all submodules
 		},
 
 		subModules: storagesList,
@@ -169,10 +167,6 @@ define(function(require) {
 					log(error.status + ' - ' + error.error + ': ' + error.message + ' ');
 				}
 			});
-		},
-
-		getStorageData: function (args) {
-			this.getStorage(args.callback)
 		},
 
 		getStorage: function(callback) {
