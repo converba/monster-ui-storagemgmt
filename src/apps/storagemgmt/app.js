@@ -147,8 +147,8 @@ define(function(require) {
 			var self = this;
 
 			self.callApi({
-				resource : 'storage.add',
-				data : {
+				resource: 'storage.add',
+				data: {
 					accountId : self.accountId,
 					data : {
 						'attachments': {},
@@ -157,13 +157,14 @@ define(function(require) {
 					removeMetadataAPI: true,
 					generateError: settings.debug
 				},
-				success : function(data) {
+				success: function(data) {
 					if(typeof(callback) === 'function') {
 						callback(data);
 					}
 				},
-				error : function(error) {
-					toastr.error(self.i18n.active().storagemgmt.storageError);
+				error: function(error) {
+					var errorMessage = self.i18n.active().storagemgmt.universalErrorMessageTemplate.replace('%api%', 'Storage');
+					monster.ui.alert(errorMessage);
 					log(error.status + ' - ' + error.error + ': ' + error.message + ' ');
 				}
 			});
@@ -449,7 +450,7 @@ define(function(require) {
 				storageData.attachments[uuid] = data;
 				return storageData;
 			} else {
-				toastr.error('Please install storage correctly (' + storageKeyword + ')');
+				monster.ui.alert('Please install storage correctly (' + storageKeyword + ')');
 			}
 		},
 
