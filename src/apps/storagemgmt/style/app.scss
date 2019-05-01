@@ -92,9 +92,17 @@
 	}
 
 	.storage-choice .logo-header {
+		display: inline-block;
+		vertical-align: top;
 		width: 118px;
 		height: 40px;
-		vertical-align: -8px;
+		padding-top: 8px;
+
+		img,
+		svg {
+			display: block;
+			max-height: 40px;
+		}
 	}
 
 	.storage-choice .item-settings-wrapper {
@@ -225,7 +233,7 @@
 
 		.storage-name {
 			font-weight: 600;
-			text-align: right;
+			text-align: left;
 			display: inline-block;
 			vertical-align: top;
 			margin-top: 0;
