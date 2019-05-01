@@ -56,9 +56,15 @@
     color: #909099;
     margin-top: 5px; }
   .storage-manager-wrapper .storage-choice .logo-header {
+    display: inline-block;
+    vertical-align: top;
     width: 118px;
     height: 40px;
-    vertical-align: -8px; }
+    padding-top: 8px; }
+    .storage-manager-wrapper .storage-choice .logo-header img,
+    .storage-manager-wrapper .storage-choice .logo-header svg {
+      display: block;
+      max-height: 40px; }
   .storage-manager-wrapper .storage-choice .item-settings-wrapper {
     clear: both; }
   .storage-manager-wrapper .storage-provider-wrapper {
@@ -137,7 +143,7 @@
       color: #22A5FF; }
     .storage-manager-wrapper .storage-choice .storage-name {
       font-weight: 600;
-      text-align: right;
+      text-align: left;
       display: inline-block;
       vertical-align: top;
       margin-top: 0;
