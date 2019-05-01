@@ -17,9 +17,19 @@
 						<div class="js-tab-content-item {{ type }} tab-content-item" data-type="{{ type }}" id="{{ type }}-new-item-content">
 							<form class="form-horizontal js-storage-settings-form">
 								{{{ formElements }}}
+								<label class="control-group">
+									<span class="control-label">{{ @root.i18n.storagemgmt.itemSettings.setDefaultLabel }}</span>
+									<div class="controls">
+										<input type="checkbox" checked="checked" value="" name="set_default" />
+									</div>
+								</label>
 								<div class="buttons-wrapper clearfix">
-									<button type="submit" class="btn btn-primary js-save" >{{ @root.i18n.storagemgmt.newItem.saveNewItemText }}</button>
-									<button type="button" class="btn js-cancel">{{ @root.i18n.storagemgmt.newItem.cancelBtnText }}</button>
+									<button type="submit" class="btn btn-primary js-save" >
+										{{ @root.i18n.storagemgmt.newItem.saveNewItemText }}
+									</button>
+									<button type="button" class="btn js-cancel">
+										{{ @root.i18n.storagemgmt.newItem.cancelBtnText }}
+									</button>
 								</div>
 							</form>
 						</div>

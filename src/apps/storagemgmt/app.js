@@ -104,7 +104,7 @@ define(function(require) {
 		storageManagerRender: function(pArgs) {
 			var self = this,
 				args = pArgs || {},
-				$container = args.container || $('<div></div>').appendTo(document.body),
+				$container = args.container || $('.app-content-wrapper'),
 				callback = args.callback;
 
 			if(pArgs.hasOwnProperty('onSetDefault') && typeof(pArgs.onSetDefault) === 'function') {
@@ -117,7 +117,7 @@ define(function(require) {
 			}
 
 			self.getStorage(function(data) {
-				var storagesData = self.storageManagerFormatData(data.storage);
+				var storagesData = self.storageManagerFormatData(data);
 				for (var i = 0, len = storagesData.length; i < len; i++) {
 					storagesData[i].logo = self.storages[storagesData[i].type].getLogo()
 				}
@@ -135,7 +135,7 @@ define(function(require) {
 				self.storageManagerBind(template, args, storagesData);
 
 				$container.empty()
-					.append(template).closest('.js-storages-settings').slideDown();
+					.append(template);
 
 				if(typeof(callback) === 'function') {
 					callback(data);
@@ -181,9 +181,8 @@ define(function(require) {
 				},
 				success: function(data) {
 					log('Storage Data:');
-					log(data);
-
-					callback(data);
+					log(data.data);
+					callback(data.data);
 				},
 				error: function(data, error, globalHandler) {
 					self._doStorageInitialRequest(function() {
@@ -203,6 +202,36 @@ define(function(require) {
 
 			self.callApi({
 				resource: 'storage.update',
+				data: {
+					accountId: self.accountId,
+					removeMetadataAPI: true, // or generateError: false
+					data: storageData
+				},
+				success: function(data, status) {
+					if(typeof(callback) === 'function') {
+						callback(data);
+					}
+				},
+				error: function(data, error, globalHandler) {
+					if (error.status === 404) {
+						callback(undefined);
+					} else {
+						globalHandler(data);
+					}
+				}
+			});
+		},
+
+		storageManagerPatchStorage: function(storageData, callback) {
+			var self = this;
+
+			if(!monster.util.isAdmin()) {
+				log('Permission error. Use admin account for change storage settings');
+				return;
+			}
+
+			self.callApi({
+				resource: 'storage.patch',
 				data: {
 					accountId: self.accountId,
 					removeMetadataAPI: true, // or generateError: false
@@ -273,7 +302,12 @@ define(function(require) {
 						var storageData = data.attachments[uuid];
 					}
 
-					var template = $(self.storages[storageType].getFormElements(storageData));
+					var template = self.getTemplate({
+						name: 'item-settings',
+						data: {
+							formElements: self.storages[storageType].getFormElements(storageData)
+						}
+					});
 
 					$container.empty()
 						.append(template);
@@ -370,20 +404,26 @@ define(function(require) {
 				var $tab = $(this).closest('.js-tab-content-item');
 				var $form = $tab.find('.js-storage-settings-form');
 				var formData = monster.ui.getFormData($form[0]);
-				var typeKeyword = $tab.data('type');
-
-				var storageData = self.storageManagerMakeConfig(typeKeyword, formData);
 				var isNeedSetDefault = $tab.find('input[name="set_default"]').is(':checked');
+				var typeKeyword = $tab.data('type');
+				var newUuid = self.storageManagerGenerateUUID();
+				delete formData['set_default'];
+				var storageData = self.storageManagerMakeConfig(typeKeyword, formData, newUuid);
 
-				self.storageManagerUpdateStorage(storageData, function(){
+				self.storageManagerPatchStorage(storageData, function(){
+					var renderArgs = {
+						callback: function () {
+							self.storageManagerShowMessage(self.i18n.active().storagemgmt.successSavingMessage, 'success');
+						}
+					};
+
 					if(isNeedSetDefault) {
-						// TODO: test next
-						self.storageManagerSetDefaultStorage(storageData.uuid);
+						self.storageManagerSetDefaultStorage(newUuid, function () {
+							self.storageManagerRender(renderArgs);
+						});
+					} else {
+						self.storageManagerRender(renderArgs);
 					}
-
-					self.storageManagerReload(function(){
-						self.storageManagerShowMessage(self.i18n.active().storagemgmt.successSavingMessage, 'success');
-					});
 				});
 			});
 
@@ -413,13 +453,7 @@ define(function(require) {
 			}
 		},
 
-		storageManagerReload: function(callback) {
-			this.storageManagerRender({
-				callback: callback
-			});
-		},
-
-		storageManagerSetDefaultStorage: function(uuid) {
+		storageManagerSetDefaultStorage: function(uuid, callback) {
 			var self = this;
 
 			if(!monster.util.isAdmin()) {
@@ -427,59 +461,44 @@ define(function(require) {
 				return;
 			}
 
-			self.getStorage(function(data) {
-				if(!data || typeof(data) === 'undefined') {
-					data = {};
-				}
-
-				var resultData = {};
-				if(data.hasOwnProperty('attachments')) {
-					resultData.attachments = data.attachments;
-				}
-				if(data.hasOwnProperty('plan')) {
-					resultData.plan = data.plan;
-				}
-
-				var newData = {
-					plan: {
-						modb: {
-							types: {
-								call_recording: {
-									attachments: {
-										handler: uuid
-									}
-								},
-								mailbox_message: {
-									attachments: {
-										handler: uuid
-									}
+			var newData = {
+				plan: {
+					modb: {
+						types: {
+							call_recording: {
+								attachments: {
+									handler: uuid
+								}
+							},
+							mailbox_message: {
+								attachments: {
+									handler: uuid
 								}
 							}
-						},
-						account: {
-							types: {
-								media: {
-									attachments: {
-										handler: uuid
-									}
+						}
+					},
+					account: {
+						types: {
+							media: {
+								attachments: {
+									handler: uuid
 								}
 							}
-						},
-					}
-				};
+						}
+					},
+				}
+			};
 
-				// Merge newData into data
-				$.extend(true, resultData, newData);
 
-				self.storageManagerUpdateStorage(resultData, function(data) {
-					$('#storage_manager_wrapper').find('.js-storage-item')
-						.removeClass('active-storage');
+			self.storageManagerPatchStorage(newData, function(data) {
+				$('#storage_manager_wrapper').find('.js-storage-item')
+					.removeClass('active-storage');
 
-					$('.js-storage-item[data-uuid="' + uuid + '"]').addClass('active-storage');
+				$('.js-storage-item[data-uuid="' + uuid + '"]').addClass('active-storage');
 
-					self.storageManagerOnSetDefault(data);
-				});
-			})
+				self.storageManagerOnSetDefault(data);
+				callback && callback(data);
+			});
 		},
 
 		storageManagerOnSetDefault: function(data) {},
@@ -499,15 +518,19 @@ define(function(require) {
 				var $storageItem = $(this).closest('.js-storage-item');
 				var $form = $storageItem.find('.js-storage-settings-form');
 				var formData = monster.ui.getFormData($form[0]);
+				var storageName = formData.name;
 				var typeKeyword = $storageItem.data('type');
 				var uuid = $storageItem.data('uuid');
 				var storageData = self.storageManagerMakeConfig(typeKeyword, formData, uuid);
 
-				self.storageManagerUpdateStorage(storageData, function(data) {
-					// update item name
-					$('.js-storage-item[data-uuid="' + uuid + '"]').find('.js-storage-name').text(storageData.name);
-					self.storageManagerShowMessage(self.i18n.active().storagemgmt.successUpdate, 'success');
+				self.getStorage(function(existStorageData) {
+					self.storageManagerPatchStorage(storageData, function(data) {
+						// update item name
+						$('.js-storage-item[data-uuid="' + uuid + '"]').find('.js-storage-name').text(storageName);
+						self.storageManagerShowMessage(self.i18n.active().storagemgmt.successUpdate, 'success');
+					});
 				});
+
 			});
 		},
 
@@ -534,7 +557,7 @@ define(function(require) {
 
 				try {
 					if(resultData.plan.modb.types.call_recording.attachments.handler === uuid) {
-						resultData.plan.modb.types.call_recording.attachments.handler = '';
+						resultData.plan = {};
 					}
 				} catch (e) {}
 
