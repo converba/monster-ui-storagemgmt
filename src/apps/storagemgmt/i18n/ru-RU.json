@@ -1,0 +1,32 @@
+{
+	"storagemgmt": {
+		"title": "Управление хранилищем",
+		"description": "Настраивайте доступные внешние хранилища",
+		"universalErrorMessageTemplate": "Пожалуйста свяжитесь с системным администратором, чтобы настроить программный интерфейс %api%, необходимый для работы данного приложения",
+		"settingsBtnText": "Настройки",
+		"settingsTitle": "Настройки хранилища",
+		"newStorageBtnText": "Создать хранилище",
+		"itemSettings": {
+			"nameLabel": "Имя хранилища",
+			"bucketLabel": "Bucket name",
+			"keyLabel": "Key",
+			"secretLabel": "Secret",
+			"saveBtnText": "Сохранить изменения",
+			"cancelBtnText": "Отменить",
+			"successUpdate": "Настройки хранилища были успешно обновлены!",
+			"setDefaultLabel": "Сделать основным"
+		},
+		"newItem": {
+			"saveNewItemText": "Создать",
+			"cancelBtnText": "Отменить"
+		},
+		"confirmDelete": "Да, удалить хранилище",
+		"confirmDeleteText": "Это действие удалит хранилище из Вашего аккаунта.",
+		"confirmDeleteTitle": "Внимание! Вы уверены, что хотите удалить хранилище?",
+		"successRemovingMessage": "Вы успешно удалили хранилище.",
+		"successSavingMessage": "Вы успешно сохранили хранилище.",
+		"successUpdate": "Настройки хранилища были успешно обновлены!",
+		"alreadyActiveMessage": "Это хранилище уже используется как основное",
+		"storageError": "Сохранение не работает корректно. Пожалуйста, свяжитесь с системным администратором, чтобы исправить это."
+	}
+}

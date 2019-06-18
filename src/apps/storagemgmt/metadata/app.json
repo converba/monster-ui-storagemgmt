@@ -3,7 +3,11 @@
 	"i18n": {
 		"en-US": {
 			"label": "Storage Engine Management",
-			"description": "The Storage Engine Management app allows you to configure storage"
+			"description": "Customize available external storage"
+		},
+		"ru-RU": {
+			"label": "Управление хранилищем",
+			"description": "Настраивайте доступные внешние хранилища"
 		}
 	},
 	"tags": [
