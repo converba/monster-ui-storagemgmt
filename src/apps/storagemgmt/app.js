@@ -37,7 +37,8 @@ define(function(require) {
 		storages: {},
 
 		i18n: {
-			'en-US': { customCss: false }
+			'en-US': { customCss: false },
+			'ru-RU': { customCss: false }
 		},
 
 		load: function(callback) {
@@ -84,20 +85,47 @@ define(function(require) {
 
 		extendI18nOfSubmodule: function (args) {
 			var self = this;
+
+			var getI18nAndExtend = function (submoduleDirName, langCode) {
+				return $.getJSON('/apps/storagemgmt/submodules/' + submoduleDirName + '/i18n/' + langCode  + '.json').done(function (newDict) {
+					var curLanguage = self.i18n.hasOwnProperty(monster.config.whitelabel.language) ? monster.config.whitelabel.language : monster.defaultLanguage;
+					var dict = self.data.i18n[langCode];
+					$.extend(true, dict, newDict);
+
+					if(langCode !== curLanguage) {
+						dict = self.data.i18n[curLanguage];
+						$.extend(true, dict, newDict);
+					}
+				})
+			};
+
 			if(args.i18n && args.submoduleName) {
 				var submoduleLanguages = args.i18n;
 				var curLanguage = self.i18n.hasOwnProperty(monster.config.whitelabel.language) ? monster.config.whitelabel.language : monster.defaultLanguage;
 
 				if (submoduleLanguages.length && submoduleLanguages.length > 0) {
 					if(submoduleLanguages.indexOf(curLanguage) > -1) {
-						$.getJSON('/apps/storagemgmt/submodules/' + args.submoduleName + '/i18n/' + curLanguage  + '.json').done(function (newDict) {
-							var dict = self.data.i18n[curLanguage];
-							$.extend(true, dict, newDict);
-						})
+						// get current language i18n and extend
+						getI18nAndExtend(args.submoduleName, curLanguage)
+							.fail(function() {
+								getI18nAndExtend(args.submoduleName, 'en-US');
+							});
+					} else {
+						getI18nAndExtend(args.submoduleName, 'en-US');
 					}
 				}
 			} else {
 				log('Extend i18n of submodule failed');
+			}
+		},
+
+		storageManagerGetStorageKeyword: function (storageData) {
+			// This function is dirty hack, TODO: fix that (add storage keyword to storage api)
+			if (storageData.type === 's3') {
+				if(storageData.settings.host === 's3.cloud.mts.ru') {
+					return 'mts';
+				}
+				return 's3'
 			}
 		},
 
@@ -118,8 +146,10 @@ define(function(require) {
 
 			self.getStorage(function(data) {
 				var storagesData = self.storageManagerFormatData(data);
+				var storageKeyword;
 				for (var i = 0, len = storagesData.length; i < len; i++) {
-					storagesData[i].logo = self.storages[storagesData[i].type].getLogo()
+					storageKeyword = self.storageManagerGetStorageKeyword(storagesData[i])
+					storagesData[i].logo = self.storages[storageKeyword].getLogo()
 				}
 
 				log('Storages List:');
@@ -291,7 +321,6 @@ define(function(require) {
 
 				var $editStorageBtn = $(this);
 				self.getStorage(function(data) {
-
 					var $storageItem = $editStorageBtn.closest('.js-storage-item');
 					var storageType = $storageItem.data('type');
 					var uuid = $storageItem.data('uuid');
@@ -303,10 +332,19 @@ define(function(require) {
 						var storageData = data.attachments[uuid];
 					}
 
+					// TODO: fix this (add storage keyword to storage api)
+					var storageKeyword;
+					if(storageData.handler === 's3') {
+						storageKeyword = 's3';
+						if(storageData.settings.host === 's3.cloud.mts.ru') {
+							storageKeyword = 'mts';
+						}
+					}
+
 					var template = self.getTemplate({
 						name: 'item-settings',
 						data: {
-							formElements: self.storages[storageType].getFormElements(storageData)
+							formElements: self.storages[storageKeyword].getFormElements(storageData)
 						}
 					});
 
@@ -522,6 +560,7 @@ define(function(require) {
 				var storageName = formData.name;
 				var typeKeyword = $storageItem.data('type');
 				var uuid = $storageItem.data('uuid');
+				// TODO: typeKeyword is not correct, fix that
 				var storageData = self.storageManagerMakeConfig(typeKeyword, formData, uuid);
 
 				self.getStorage(function(existStorageData) {

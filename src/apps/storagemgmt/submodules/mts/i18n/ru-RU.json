@@ -1,0 +1,12 @@
+{
+	"storagemgmt": {
+		"submodules": {
+			"mts": {
+				"nameLabel": "Имя",
+				"bucketLabel": "Bucket",
+				"keyLabel": "Key",
+				"secretLabel": "Secret"
+			}
+		}
+	}
+}

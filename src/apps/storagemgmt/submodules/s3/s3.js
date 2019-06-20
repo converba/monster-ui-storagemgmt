@@ -3,7 +3,7 @@ define(function(require){
 
 	const CONFIG = {
 		submoduleName: 's3',
-		i18n: [ 'en-US' ]
+		i18n: [ 'en-US', 'ru-RU' ]
 	};
 
 	var app = {
