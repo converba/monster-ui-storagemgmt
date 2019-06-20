@@ -181,7 +181,8 @@
     display: inline-block;
     vertical-align: top;
     float: none;
-    padding-right: 14px; }
+    padding-right: 14px;
+    line-height: 1; }
   .storage-item-settings .form-horizontal .controls {
     margin-left: 0;
     display: inline-block;
